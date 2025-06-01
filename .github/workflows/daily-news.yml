@@ -1,10 +1,12 @@
-name: Test News Collection
+name: Daily News Collection
 
 on:
-  workflow_dispatch:  # Manual trigger for testing
+  schedule:
+    - cron: '5 13 * * *'  # Runs at 16:05 Moscow time (UTC+3)
+  workflow_dispatch:  # Allows manual trigger for testing
 
 jobs:
-  test-news-fetch:
+  fetch-news:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,13 +22,23 @@ jobs:
           echo "CELERY_BROKER_URL=redis://redis:6379/0" >> .env
           echo "CELERY_RESULT_BACKEND=redis://redis:6379/0" >> .env
 
-      - name: Start containers
-        run: docker compose up -d
-
-      - name: Run for test period
+      - name: Start containers and run task
         run: |
-          echo "Running for 5 minutes..."
-          sleep 300  # Run for 5 minutes
+          docker compose up -d
+          # Wait for containers to be ready
+          sleep 10
+          # Run the task once
+          docker compose exec -T celery_worker celery -A celery_app call celery_app.fetch_and_send_news
+
+      - name: Wait for task completion
+        run: |
+          # Wait for up to 5 minutes for task to complete
+          timeout 300 bash -c '
+          until docker compose logs celery_worker | grep -q "Successfully sent"; do
+            echo "Waiting for task to complete..."
+            sleep 10
+          done
+          '
 
       - name: Show logs
         if: always()

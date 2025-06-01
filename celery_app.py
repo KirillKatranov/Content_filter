@@ -4,7 +4,6 @@ import sys
 from celery import Celery
 import os
 from dotenv import load_dotenv
-from datetime import timedelta
 import logging
 
 # Configure logging
@@ -24,14 +23,6 @@ logger.info("Current working directory: %s", os.getcwd())
 from bot_sender.Telegram_send import send_telegram_message
 from news_fetcher.nplus1_parser import fetch_news_selenium
 from news_filter.filter_news_n import filter_news
-
-# Configure the task to run every 30 seconds
-app.conf.beat_schedule = {
-    'fetch-and-send-news': {
-        'task': 'celery_app.fetch_and_send_news',
-        'schedule': timedelta(seconds=30),  # Run every 30 seconds
-    },
-}
 
 @app.task
 def fetch_and_send_news():
