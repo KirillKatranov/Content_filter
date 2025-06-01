@@ -4,7 +4,7 @@ on:
   schedule:
     # Moscow is UTC+3, so 16:28 Moscow time is 13:28 UTC
     # Note: GitHub Actions scheduled workflows may have up to 15 minutes delay
-    - cron: '45 4 * * *'  # Runs at 16:28 Moscow time (UTC+3)
+    - cron: '45 3 * * *'  # Runs at 6:45 Moscow time (UTC+3)
   workflow_dispatch:  # Allows manual trigger for testing
 
 permissions:
