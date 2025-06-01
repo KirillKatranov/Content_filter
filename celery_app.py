@@ -5,6 +5,12 @@ from celery import Celery
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv()
 
@@ -13,7 +19,7 @@ app = Celery('news_bot',
              backend='redis://redis:6379/0')
 
 app.conf.timezone = 'Europe/Moscow'
-print("Текущая рабочая директория:", os.getcwd())
+logger.info("Current working directory: %s", os.getcwd())
 
 from bot_sender.Telegram_send import send_telegram_message
 from news_fetcher.nplus1_parser import fetch_news_selenium
@@ -224,19 +230,29 @@ def fetch_and_send_news():
     try:
         # Fetch news
         all_news = fetch_news_selenium()
-        print(f"Total news found: {len(all_news)}")
+        logger.info(f"Total news found: {len(all_news)}")
         
         # Filter news
         filtered = filter_news(all_news, positive_keywords, negative_keywords)
-        print(f"Filtered news count: {len(filtered)}")
+        logger.info(f"Filtered news count: {len(filtered)}")
         
         # Send to Telegram
+        successful_sends = 0
         for news in filtered:
             message = f"<b>{news['title']}</b>\n{news['link']}"
-            send_telegram_message(message)
-            print(f"Sent: {news['title']}")
+            response = send_telegram_message(message)
             
-        return f"Successfully processed {len(filtered)} news items"
+            if response.get('ok'):
+                successful_sends += 1
+                logger.info(f"Successfully sent: {news['title']}")
+            else:
+                logger.error(f"Failed to send news. Title: {news['title']}, Error: {response.get('error') or response}")
+            
+        result_msg = f"Successfully sent {successful_sends} out of {len(filtered)} news items"
+        logger.info(result_msg)
+        return result_msg
+        
     except Exception as e:
-        print(f"Error in fetch_and_send_news task: {str(e)}")
-        return f"Error: {str(e)}"
+        error_msg = f"Error in fetch_and_send_news task: {str(e)}"
+        logger.error(error_msg)
+        return error_msg
