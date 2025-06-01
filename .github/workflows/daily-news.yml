@@ -3,7 +3,7 @@ name: Daily News Collection
 on:
   schedule:
     # Moscow is UTC+3, so 16:05 Moscow time is 13:05 UTC
-    - cron: '5 13 * * *'  # Runs at 16:05 Moscow time (UTC+3)
+    - cron: '28 13 * * *'  # Runs at 16:05 Moscow time (UTC+3)
   workflow_dispatch:  # Allows manual trigger for testing
 
 permissions:
