@@ -5,7 +5,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
 
-def fetch_news_selenium(limit=15):
+def fetch_news_selenium(limit=25):
     options = Options()
     options.add_argument("--headless")  # Запуск без окна браузера
     options.add_argument("--disable-gpu")
