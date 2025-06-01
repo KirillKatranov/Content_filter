@@ -2,8 +2,8 @@ name: Daily News Collection
 
 on:
   schedule:
-    # Moscow is UTC+3, so 16:05 Moscow time is 13:05 UTC
-    - cron: '28 13 * * *'  # Runs at 16:05 Moscow time (UTC+3)
+    # Moscow is UTC+3, so 16:28 Moscow time is 13:28 UTC
+    - cron: '28 13 * * *'  # Runs at 16:28 Moscow time (UTC+3)
   workflow_dispatch:  # Allows manual trigger for testing
 
 permissions:
@@ -27,13 +27,19 @@ jobs:
           echo "CELERY_BROKER_URL=redis://redis:6379/0" >> .env
           echo "CELERY_RESULT_BACKEND=redis://redis:6379/0" >> .env
 
-      - name: Start containers and run task
+      - name: Start containers
+        run: docker compose up -d redis celery_worker
+
+      - name: Wait for services
+        run: sleep 10
+
+      - name: Run news collection task
         run: |
-          docker compose up -d
-          # Wait for containers to be ready
-          sleep 10
-          # Run the task once
-          docker compose exec -T celery_worker celery -A celery_app call celery_app.fetch_and_send_news
+          docker compose exec -T celery_worker python -c "
+          from celery_app import fetch_and_send_news
+          result = fetch_and_send_news.delay()
+          print('Task started with ID:', result.id)
+          "
 
       - name: Wait for task completion
         run: |
