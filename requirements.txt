@@ -1,6 +1,6 @@
 aiogram==3.1.1
 amqp==5.3.1
-async-timeout==5.0.1
+async-timeout==4.0.3
 beautifulsoup4==4.13.4
 billiard==4.2.1
 celery==5.5.2
@@ -20,7 +20,7 @@ redis==6.1.0
 requests==2.32.3
 six==1.17.0
 soupsieve==2.7
-typing_extensions==4.13.2
+typing_extensions==4.7.1
 tzdata==2025.2
 urllib3==2.4.0
 vine==5.1.0
